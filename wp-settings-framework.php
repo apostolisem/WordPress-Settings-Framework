@@ -74,20 +74,26 @@ if ( ! class_exists( 'WordPressSettingsFramework' ) ) {
 		/**
 		 * WordPressSettingsFramework constructor.
 		 *
-		 * @param string $settings_file
-		 * @param bool   $option_group
+		 * @param null|string $settings_file Path to a settings file, or null if you pass the option_group manually and construct your settings with a filter.
+		 * @param bool|string $option_group Option group name, usually a short slug.
 		 */
-		public function __construct( $settings_file, $option_group = false ) {
-			if ( ! is_file( $settings_file ) ) {
-				return;
+		public function __construct( $settings_file = null, $option_group = false ) {
+			$this->option_group = $option_group;
+
+			if ( $settings_file ) {
+				if ( ! is_file( $settings_file ) ) {
+					return;
+				}
+
+				require_once( $settings_file );
+
+				if ( ! $this->option_group ) {
+					$this->option_group = preg_replace( "/[^a-z0-9]+/i", "", basename( $settings_file, '.php' ) );
+				}
 			}
 
-			require_once( $settings_file );
-
-			$this->option_group = preg_replace( "/[^a-z0-9]+/i", "", basename( $settings_file, '.php' ) );
-
-			if ( $option_group ) {
-				$this->option_group = $option_group;
+			if ( empty( $this->option_group ) ) {
+				return;
 			}
 
 			$this->options_path = plugin_dir_path( __FILE__ );
@@ -401,7 +407,7 @@ if ( ! class_exists( 'WordPressSettingsFramework' ) ) {
 
 			$timepicker = ! empty( $args['timepicker'] ) ? htmlentities( json_encode( $args['timepicker'] ) ) : null;
 
-			echo '<input name="' . $args['name'] . '" id="' . $args['id'] . '" value="' . $args['value'] . '" class="timepicker regular-text ' . $args['class'] . '" data-timepicker="' . $timepicker . '" />';
+			echo '<input type="text" name="' . $args['name'] . '" id="' . $args['id'] . '" value="' . $args['value'] . '" class="timepicker regular-text ' . $args['class'] . '" data-timepicker="' . $timepicker . '" />';
 
 			$this->generate_description( $args['desc'] );
 		}
@@ -625,10 +631,10 @@ if ( ! class_exists( 'WordPressSettingsFramework' ) ) {
                     var colorPicker = $("#' . $color_picker_id . '");
                     colorPicker.farbtastic("#' . $args['id'] . '");
                     colorPicker.hide();
-                    $("#' . $args['id'] . '").live("focus", function(){
+                    $("#' . $args['id'] . '").on("focus", function(){
                         colorPicker.show();
                     });
-                    $("#' . $args['id'] . '").live("blur", function(){
+                    $("#' . $args['id'] . '").on("blur", function(){
                         colorPicker.hide();
                         if($(this).val() == "") $(this).val("#");
                     });
@@ -694,7 +700,7 @@ if ( ! class_exists( 'WordPressSettingsFramework' ) ) {
 		 * @param array $args
 		 */
 		public function generate_custom_field( $args ) {
-			echo $args['default'];
+			echo isset( $args['output'] ) ? $args['output'] : $args['default'];
 		}
 
 		/**
