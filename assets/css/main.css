@@ -111,8 +111,12 @@
 
 /* $. Repeater */
 
+.wpsf-group__row:first-child .wpsf-group__row-remove {
+	display: none;
+}
+
 .wpsf-group__row td {
-	border-bottom: 1px solid #e5e5e5;
+	border-bottom: 1px solid #ccd0d4;
 }
 
 .wpsf-group__row:last-child td {
@@ -167,6 +171,10 @@
 
 .wpsf-group__field-wrapper:last-child {
 	border-bottom: none;
+}
+
+.wpsf-group__field-wrapper.wpsf-group__field-wrapper--hidden {
+	display: none;
 }
 
 .wpsf-group__field-label {

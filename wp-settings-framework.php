@@ -75,7 +75,7 @@ if ( ! class_exists( 'WordPressSettingsFramework' ) ) {
 		 * WordPressSettingsFramework constructor.
 		 *
 		 * @param null|string $settings_file Path to a settings file, or null if you pass the option_group manually and construct your settings with a filter.
-		 * @param bool|string $option_group Option group name, usually a short slug.
+		 * @param bool|string $option_group  Option group name, usually a short slug.
 		 */
 		public function __construct( $settings_file = null, $option_group = false ) {
 			$this->option_group = $option_group;
@@ -221,7 +221,6 @@ if ( ! class_exists( 'WordPressSettingsFramework' ) ) {
 				?>
 			</div>
 			<?php
-
 		}
 
 		/**
@@ -385,6 +384,17 @@ if ( ! class_exists( 'WordPressSettingsFramework' ) ) {
 		}
 
 		/**
+		 * Generate: Hidden field.
+		 *
+		 * @param array $args
+		 */
+		public function generate_hidden_field( $args ) {
+			$args['value'] = esc_attr( stripslashes( $args['value'] ) );
+
+			echo '<input type="hidden" name="' . $args['name'] . '" id="' . $args['id'] . '" value="' . $args['value'] . '"  class="hidden-field ' . $args['class'] . '" />';
+		}
+
+		/**
 		 * Generate: Number field
 		 *
 		 * @param array $args
@@ -435,7 +445,7 @@ if ( ! class_exists( 'WordPressSettingsFramework' ) ) {
 		 * @param array $args
 		 */
 		public function generate_group_field( $args ) {
-			$value = (array) $args['value'];
+			$value     = (array) $args['value'];
 			$row_count = ! empty( $value ) ? count( $value ) : 1;
 
 			echo '<table class="widefat wpsf-group" cellspacing="0">';
@@ -466,6 +476,8 @@ if ( ! class_exists( 'WordPressSettingsFramework' ) ) {
 		 */
 		public function generate_group_row_template( $args, $blank = false, $row = 0 ) {
 			$row_template = false;
+			$row_id       = ! empty( $args['value'][ $row ]['row_id'] ) ? $args['value'][ $row ]['row_id'] : $row;
+			$row_id_value = $blank ? '' : $row_id;
 
 			if ( $args['subfields'] ) {
 				$row_class = $row % 2 == 0 ? "alternate" : "";
@@ -476,6 +488,8 @@ if ( ! class_exists( 'WordPressSettingsFramework' ) ) {
 
 				$row_template .= '<td class="wpsf-group__row-fields">';
 
+				$row_template .= '<input type="hidden" class="wpsf-group__row-id" name="' . sprintf( '%s[%d][row_id]', esc_attr( $args['name'] ), esc_attr( $row ) ) . '" value="' . esc_attr( $row_id_value ) . '" />';
+
 				foreach ( $args['subfields'] as $subfield ) {
 					$subfield = wp_parse_args( $subfield, $this->setting_defaults );
 
@@ -483,8 +497,9 @@ if ( ! class_exists( 'WordPressSettingsFramework' ) ) {
 					$subfield['name']  = sprintf( '%s[%d][%s]', $args['name'], $row, $subfield['id'] );
 					$subfield['id']    = sprintf( '%s_%d_%s', $args['id'], $row, $subfield['id'] );
 
-					$row_template .= '<div class="wpsf-group__field-wrapper">';
+					$class = sprintf( 'wpsf-group__field-wrapper--%s', $subfield['type'] );
 
+					$row_template .= sprintf( '<div class="wpsf-group__field-wrapper %s">', $class );
 					$row_template .= sprintf( '<label for="%s" class="wpsf-group__field-label">%s</label>', $subfield['id'], $subfield['title'] );
 
 					ob_start();
@@ -797,7 +812,7 @@ if ( ! class_exists( 'WordPressSettingsFramework' ) ) {
 				if ( empty( $section['fields'] ) ) {
 					continue;
 				}
-				
+
 				foreach ( $section['fields'] as $field ) {
 					if ( ! empty( $field['default'] ) && is_array( $field['default'] ) ) {
 						$field['default'] = array_values( $field['default'] );
